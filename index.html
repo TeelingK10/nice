@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>いいところノート</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper: #F2E9DC;
+    --paper-card: #FBF6EC;
+    --ink: #2E3530;
+    --ink-soft: #5B615B;
+    --rose: #C1666B;
+    --sage: #7F9A85;
+    --gold: #C79A45;
+    --line: #DCCFB8;
+    --shadow: rgba(46,53,48,0.14);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 8%, rgba(193,102,107,0.06), transparent 40%),
+      radial-gradient(circle at 85% 92%, rgba(127,154,133,0.08), transparent 45%),
+      var(--paper);
+    min-height:100vh;
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .screen{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+  }
+  .hidden{display:none !important;}
+
+  /* ---------- ログイン画面 ---------- */
+  .login-card{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:44px 40px 40px;
+    width:100%;
+    max-width:360px;
+    box-shadow:0 18px 40px -18px var(--shadow);
+    position:relative;
+  }
+  .login-card::before{
+    content:'';
+    position:absolute;
+    top:-10px; left:32px;
+    width:44px; height:20px;
+    background:rgba(199,154,69,0.55);
+    transform:rotate(-3deg);
+    box-shadow:0 2px 4px rgba(0,0,0,0.08);
+  }
+  .brand-eyebrow{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    color:var(--sage);
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  h1.title{
+    font-family:'Fraunces', serif;
+    font-size:30px;
+    font-weight:600;
+    margin:0 0 8px;
+    line-height:1.2;
+  }
+  .sub{
+    color:var(--ink-soft);
+    font-size:14px;
+    margin:0 0 28px;
+  }
+  input[type="password"], input[type="text"], textarea{
+    width:100%;
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    padding:12px 14px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:#fff;
+    color:var(--ink);
+    outline:none;
+    transition:border-color .15s ease;
+  }
+  input:focus, textarea:focus{
+    border-color:var(--sage);
+  }
+  textarea{resize:vertical; min-height:78px; font-family:'Inter',sans-serif;}
+  button.primary{
+    width:100%;
+    margin-top:16px;
+    padding:12px 14px;
+    border:none;
+    border-radius:3px;
+    background:var(--ink);
+    color:var(--paper-card);
+    font-size:15px;
+    font-weight:500;
+    cursor:pointer;
+    font-family:'Inter', sans-serif;
+    transition:transform .1s ease, background .15s ease;
+  }
+  button.primary:hover{background:#1e2420;}
+  button.primary:active{transform:scale(0.98);}
+  .error-msg{
+    color:var(--rose);
+    font-size:13px;
+    margin-top:10px;
+    min-height:16px;
+  }
+
+  /* ---------- メイン画面 ---------- */
+  .app-wrap{
+    width:100%;
+    max-width:640px;
+    margin:0 auto;
+    padding:40px 20px 80px;
+  }
+  header.app-header{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-bottom:28px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:18px;
+  }
+  header.app-header h1{
+    font-family:'Fraunces', serif;
+    font-size:26px;
+    margin:0;
+  }
+  .logout-link{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    color:var(--ink-soft);
+    cursor:pointer;
+    text-decoration:underline;
+    text-underline-offset:3px;
+    background:none;border:none;
+  }
+
+  form.add-form{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:22px;
+    margin-bottom:34px;
+    box-shadow:0 12px 28px -18px var(--shadow);
+  }
+  label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--sage);
+    margin-bottom:6px;
+  }
+  .field{margin-bottom:16px;}
+  .field:last-of-type{margin-bottom:0;}
+
+  .cards{
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+  }
+  .card{
+    background:var(--paper-card);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:20px 22px 18px;
+    position:relative;
+    box-shadow:0 10px 22px -16px var(--shadow);
+    animation:fadeIn .3s ease;
+  }
+  @keyframes fadeIn{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);}}
+  .card .name{
+    font-family:'Fraunces', serif;
+    font-size:19px;
+    font-weight:600;
+    margin:0 0 6px;
+  }
+  .card .point{
+    font-size:15px;
+    line-height:1.65;
+    color:var(--ink);
+    margin:0 0 14px;
+    white-space:pre-wrap;
+  }
+  .card-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .stamp{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--rose);
+    border:1px solid var(--rose);
+    border-radius:2px;
+    padding:2px 8px;
+    transform:rotate(-2deg);
+    display:inline-block;
+    opacity:0.85;
+  }
+  .delete-link{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--ink-soft);
+    background:none;
+    border:none;
+    cursor:pointer;
+    text-decoration:underline;
+    text-underline-offset:3px;
+  }
+  .delete-link:hover{color:var(--rose);}
+  .empty-state{
+    text-align:center;
+    color:var(--ink-soft);
+    font-size:14px;
+    padding:60px 20px;
+    border:1px dashed var(--line);
+    border-radius:4px;
+  }
+</style>
+</head>
+<body>
+
+  <!-- ログイン画面 -->
+  <div id="loginScreen" class="screen">
+    <div class="login-card">
+      <div class="brand-eyebrow">Private Notebook</div>
+      <h1 class="title">いいところノート</h1>
+      <p class="sub">合言葉を入れてひらいてください</p>
+      <div class="field">
+        <input type="password" id="passwordInput" placeholder="合言葉" autocomplete="off">
+      </div>
+      <button class="primary" id="loginBtn">ひらく</button>
+      <div class="error-msg" id="loginError"></div>
+    </div>
+  </div>
+
+  <!-- メイン画面 -->
+  <div id="mainScreen" class="screen hidden" style="align-items:flex-start;">
+    <div class="app-wrap">
+      <header class="app-header">
+        <h1>いいところノート</h1>
+        <button class="logout-link" id="logoutBtn">とじる</button>
+      </header>
+
+      <form class="add-form" id="addForm">
+        <div class="field">
+          <label for="nameInput">だれの</label>
+          <input type="text" id="nameInput" placeholder="例：田中さん" required>
+        </div>
+        <div class="field">
+          <label for="pointInput">どんなところが良かったか</label>
+          <textarea id="pointInput" placeholder="例：忙しい時でも笑顔で挨拶してくれた" required></textarea>
+        </div>
+        <button type="submit" class="primary">書き留める</button>
+        <div class="error-msg" id="addError"></div>
+      </form>
+
+      <div class="cards" id="cardsWrap">
+        <div class="empty-state">まだメモがありません。最初のひとつを書いてみましょう。</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  // ▼▼▼ ここにGASのWebアプリURLを貼り付けてください ▼▼▼
+  const GAS_URL = "YOUR_DEPLOYED_WEB_APP_URL_HERE";
+  // ▲▲▲ 例: https://script.google.com/macros/s/XXXXXXXX/exec ▲▲▲
+
+  const loginScreen = document.getElementById('loginScreen');
+  const mainScreen = document.getElementById('mainScreen');
+  const passwordInput = document.getElementById('passwordInput');
+  const loginBtn = document.getElementById('loginBtn');
+  const loginError = document.getElementById('loginError');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const addForm = document.getElementById('addForm');
+  const addError = document.getElementById('addError');
+  const cardsWrap = document.getElementById('cardsWrap');
+
+  function getPassword(){ return sessionStorage.getItem('notebook_pw'); }
+  function setPassword(pw){ sessionStorage.setItem('notebook_pw', pw); }
+  function clearPassword(){ sessionStorage.removeItem('notebook_pw'); }
+
+  async function callApi(payload){
+    const res = await fetch(GAS_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // GASのCORS制約回避のためtext/plainで送る
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  }
+
+  function showMain(){
+    loginScreen.classList.add('hidden');
+    mainScreen.classList.remove('hidden');
+    loadList();
+  }
+  function showLogin(){
+    mainScreen.classList.add('hidden');
+    loginScreen.classList.remove('hidden');
+    passwordInput.value = '';
+    passwordInput.focus();
+  }
+
+  async function tryLogin(){
+    const pw = passwordInput.value;
+    if(!pw){ return; }
+    loginError.textContent = '';
+    loginBtn.disabled = true;
+    loginBtn.textContent = '確認中…';
+    try{
+      const data = await callApi({ action:'auth', password: pw });
+      if(data.ok){
+        setPassword(pw);
+        showMain();
+      } else {
+        loginError.textContent = '合言葉が違うようです';
+      }
+    } catch(err){
+      loginError.textContent = '接続に失敗しました（GAS_URLの設定を確認してください）';
+    } finally {
+      loginBtn.disabled = false;
+      loginBtn.textContent = 'ひらく';
+    }
+  }
+
+  loginBtn.addEventListener('click', tryLogin);
+  passwordInput.addEventListener('keydown', e => { if(e.key === 'Enter') tryLogin(); });
+
+  logoutBtn.addEventListener('click', () => {
+    clearPassword();
+    showLogin();
+  });
+
+  function renderCards(items){
+    cardsWrap.innerHTML = '';
+    if(!items || items.length === 0){
+      cardsWrap.innerHTML = '<div class="empty-state">まだメモがありません。最初のひとつを書いてみましょう。</div>';
+      return;
+    }
+    items.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <p class="name">${escapeHtml(item.name)}</p>
+        <p class="point">${escapeHtml(item.point)}</p>
+        <div class="card-footer">
+          <span class="stamp">${escapeHtml(item.date)}</span>
+          <button class="delete-link" data-id="${item.id}">けす</button>
+        </div>
+      `;
+      cardsWrap.appendChild(card);
+    });
+    cardsWrap.querySelectorAll('.delete-link').forEach(btn => {
+      btn.addEventListener('click', () => onDelete(btn.getAttribute('data-id')));
+    });
+  }
+
+  function escapeHtml(str){
+    return String(str ?? '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  async function loadList(){
+    cardsWrap.innerHTML = '<div class="empty-state">読み込み中…</div>';
+    try{
+      const data = await callApi({ action:'list', password: getPassword() });
+      if(data.ok){
+        renderCards(data.items);
+      } else {
+        showLogin();
+      }
+    } catch(err){
+      cardsWrap.innerHTML = '<div class="empty-state">読み込みに失敗しました</div>';
+    }
+  }
+
+  addForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const name = document.getElementById('nameInput').value.trim();
+    const point = document.getElementById('pointInput').value.trim();
+    if(!name || !point) return;
+    addError.textContent = '';
+    const submitBtn = addForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '保存中…';
+    try{
+      const data = await callApi({ action:'add', password:getPassword(), name, point });
+      if(data.ok){
+        document.getElementById('nameInput').value = '';
+        document.getElementById('pointInput').value = '';
+        loadList();
+      } else {
+        addError.textContent = '保存に失敗しました';
+      }
+    } catch(err){
+      addError.textContent = '接続に失敗しました';
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '書き留める';
+    }
+  });
+
+  async function onDelete(id){
+    if(!confirm('このメモを消しますか？')) return;
+    try{
+      const data = await callApi({ action:'delete', password:getPassword(), id });
+      if(data.ok) loadList();
+    } catch(err){ /* noop */ }
+  }
+
+  // 再訪問時、パスワードがsessionStorageに残っていれば自動ログイン
+  window.addEventListener('DOMContentLoaded', () => {
+    if(getPassword()){
+      showMain();
+    } else {
+      showLogin();
+    }
+  });
+</script>
+</body>
+</html>
