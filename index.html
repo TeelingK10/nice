@@ -212,7 +212,7 @@
     display:inline-block;
     opacity:0.85;
   }
-  .delete-link{
+  .delete-link, .edit-link, .save-link, .cancel-link{
     font-family:'IBM Plex Mono', monospace;
     font-size:11px;
     color:var(--ink-soft);
@@ -221,8 +221,17 @@
     cursor:pointer;
     text-decoration:underline;
     text-underline-offset:3px;
+    margin-left:14px;
   }
   .delete-link:hover{color:var(--rose);}
+  .edit-link:hover{color:var(--sage);}
+  .save-link{color:var(--sage); margin-left:0;}
+  .save-link:hover{color:#5f7a65;}
+  .cancel-link:hover{color:var(--rose);}
+  .card-actions{display:flex; align-items:center;}
+  .card.editing input, .card.editing textarea{
+    margin-bottom:10px;
+  }
   .empty-state{
     text-align:center;
     color:var(--ink-soft);
@@ -278,7 +287,7 @@
 
 <script>
   // ▼▼▼ ここにGASのWebアプリURLを貼り付けてください ▼▼▼
-  const GAS_URL = "YOUR_DEPLOYED_WEB_APP_URL_HERE";
+  const GAS_URL = "https://script.google.com/macros/s/AKfycbyuz1h5MRG1f0Y7FSxdwN_JffAtA3RtQoK5tA6xQw8Mb0EjO_WrSUoC4cqMOvUTyvQY/exec";
   // ▲▲▲ 例: https://script.google.com/macros/s/XXXXXXXX/exec ▲▲▲
 
   const loginScreen = document.getElementById('loginScreen');
@@ -346,28 +355,94 @@
     showLogin();
   });
 
+  let currentItems = [];
+  let editingId = null;
+
   function renderCards(items){
+    if(items) currentItems = items;
     cardsWrap.innerHTML = '';
-    if(!items || items.length === 0){
+    if(!currentItems || currentItems.length === 0){
       cardsWrap.innerHTML = '<div class="empty-state">まだメモがありません。最初のひとつを書いてみましょう。</div>';
       return;
     }
-    items.forEach(item => {
+    currentItems.forEach(item => {
       const card = document.createElement('div');
-      card.className = 'card';
-      card.innerHTML = `
-        <p class="name">${escapeHtml(item.name)}</p>
-        <p class="point">${escapeHtml(item.point)}</p>
-        <div class="card-footer">
-          <span class="stamp">${escapeHtml(item.date)}</span>
-          <button class="delete-link" data-id="${item.id}">けす</button>
-        </div>
-      `;
+      const isEditing = editingId === item.id;
+      card.className = 'card' + (isEditing ? ' editing' : '');
+
+      if(isEditing){
+        card.innerHTML = `
+          <div class="field">
+            <input type="text" class="edit-name" value="${escapeHtml(item.name)}">
+          </div>
+          <div class="field">
+            <textarea class="edit-point">${escapeHtml(item.point)}</textarea>
+          </div>
+          <div class="card-footer">
+            <span class="stamp">${escapeHtml(item.date)}</span>
+            <div class="card-actions">
+              <button class="save-link" data-id="${item.id}">保存する</button>
+              <button class="cancel-link" data-id="${item.id}">やめる</button>
+            </div>
+          </div>
+        `;
+      } else {
+        card.innerHTML = `
+          <p class="name">${escapeHtml(item.name)}</p>
+          <p class="point">${escapeHtml(item.point)}</p>
+          <div class="card-footer">
+            <span class="stamp">${escapeHtml(item.date)}</span>
+            <div class="card-actions">
+              <button class="edit-link" data-id="${item.id}">編集</button>
+              <button class="delete-link" data-id="${item.id}">けす</button>
+            </div>
+          </div>
+        `;
+      }
       cardsWrap.appendChild(card);
     });
+
     cardsWrap.querySelectorAll('.delete-link').forEach(btn => {
       btn.addEventListener('click', () => onDelete(btn.getAttribute('data-id')));
     });
+    cardsWrap.querySelectorAll('.edit-link').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editingId = btn.getAttribute('data-id');
+        renderCards();
+      });
+    });
+    cardsWrap.querySelectorAll('.cancel-link').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editingId = null;
+        renderCards();
+      });
+    });
+    cardsWrap.querySelectorAll('.save-link').forEach(btn => {
+      btn.addEventListener('click', (e) => onSaveEdit(e.target));
+    });
+  }
+
+  async function onSaveEdit(btn){
+    const id = btn.getAttribute('data-id');
+    const card = btn.closest('.card');
+    const name = card.querySelector('.edit-name').value.trim();
+    const point = card.querySelector('.edit-point').value.trim();
+    if(!name || !point) return;
+    btn.disabled = true;
+    btn.textContent = '保存中…';
+    try{
+      const data = await callApi({ action:'update', password:getPassword(), id, name, point });
+      if(data.ok){
+        editingId = null;
+        loadList();
+      } else {
+        btn.disabled = false;
+        btn.textContent = '保存する';
+      }
+    } catch(err){
+      btn.disabled = false;
+      btn.textContent = '保存する';
+    }
   }
 
   function escapeHtml(str){
